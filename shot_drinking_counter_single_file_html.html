@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shot Drinking Counter 🍻</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #ffafbd, #ffc3a0);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .players {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .player {
+      background: white;
+      border-radius: 1rem;
+      padding: 1rem;
+      width: 250px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .player h2 {
+      margin-top: 0;
+    }
+    .controls button {
+      margin: 0.25rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #ff6b6b;
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    .controls button:hover {
+      background: #ff4b4b;
+    }
+    #addPlayerBtn {
+      margin-top: 1rem;
+      background: #4CAF50;
+    }
+    #addPlayerBtn:hover {
+      background: #43a047;
+    }
+    canvas#confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <h1>🍻 Shot Drinking Counter (Multi-Player)</h1>
+  <button id="addPlayerBtn">+ Add Player</button>
+
+  <div class="players" id="playersContainer"></div>
+
+  <canvas id="confettiCanvas"></canvas>
+
+  <script>
+    const playersContainer = document.getElementById('playersContainer');
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+
+    let confettiParticles = [];
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfetti() {
+      for (let i = 0; i < 100; i++) {
+        confettiParticles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          r: Math.random() * 6 + 2,
+          d: Math.random() * 0.5 + 0.5,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          tilt: Math.random() * 10 - 10
+        });
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiParticles.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2, true);
+        ctx.fill();
+      });
+      updateConfetti();
+      requestAnimationFrame(drawConfetti);
+    }
+
+    function updateConfetti() {
+      confettiParticles.forEach(p => {
+        p.y += p.d * 4;
+        p.x += Math.sin(p.tilt);
+        if (p.y > canvas.height) {
+          p.y = -10;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+    }
+
+    drawConfetti();
+
+    function triggerConfetti() {
+      createConfetti();
+      setTimeout(() => { confettiParticles = []; }, 2000);
+    }
+
+    function createPlayer(name) {
+      const player = document.createElement('div');
+      player.className = 'player';
+      let total = 0;
+      const history = [];
+
+      player.innerHTML = `
+        <h2>${name}</h2>
+        <p>Shots: <span class="count">0</span></p>
+        <div class="controls">
+          <button class="add1">+1 Shot</button>
+          <button class="add2">+2 Shots</button>
+          <button class="undo">Undo</button>
+          <button class="reset">Reset</button>
+        </div>
+      `;
+
+      const countEl = player.querySelector('.count');
+      player.querySelector('.add1').addEventListener('click', () => {
+        total += 1;
+        history.push(1);
+        countEl.textContent = total;
+        triggerConfetti();
+      });
+
+      player.querySelector('.add2').addEventListener('click', () => {
+        total += 2;
+        history.push(2);
+        countEl.textContent = total;
+        triggerConfetti();
+      });
+
+      player.querySelector('.undo').addEventListener('click', () => {
+        if (history.length > 0) {
+          total -= history.pop();
+          countEl.textContent = total;
+        }
+      });
+
+      player.querySelector('.reset').addEventListener('click', () => {
+        total = 0;
+        history.length = 0;
+        countEl.textContent = total;
+      });
+
+      playersContainer.appendChild(player);
+    }
+
+    addPlayerBtn.addEventListener('click', () => {
+      const name = prompt('Enter player name:');
+      if (name && name.trim() !== '') {
+        createPlayer(name.trim());
+      }
+    });
+  </script>
+</body>
+</html>
