@@ -1,5 +1,5 @@
 **
 
-A joke output from complains whent taking shots
+A joke output from complaints whent taking shots
 
 Made with HTML, CSS4, and Vanilla JS
