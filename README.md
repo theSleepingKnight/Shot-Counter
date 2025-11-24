@@ -1,4 +1,4 @@
-**
+** Test it here: https://thesleepingknight.github.io/Shot-Counter/
 
 A joke output from complaints whent taking shots
 
